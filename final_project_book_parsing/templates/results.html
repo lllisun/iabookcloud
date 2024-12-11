@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>{% if query %}Search Results{% else %}Popular Books{% endif %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    {% include 'header.html' %}
+
+    <div class="container">
+        <div class="search-header">
+            <div class="header-content">
+                <h1 class="main-title">{% if query %}Search Results{% else %}Most Downloaded{% endif %}</h1>
+                <form action="{{ url_for('index') }}" method="get" class="search-form">
+                    <input type="text" 
+                           name="query" 
+                           value="{{ query }}" 
+                           class="search-input" 
+                           placeholder="Search by title, author, or keyword...">
+                    <button type="submit" class="search-button">Search</button>
+                </form>
+            </div>
+            <h2 class="subtitle">Expect each page to take about 30 seconds to load, when browsing through main list! Working on optimization...</h2>
+        </div>
+
+        <div class="results-info">
+            {% if query %}
+                Found {{ total_results }} results for "{{ query }}"
+            {% else %}
+                Showing {{ total_results }} open source books
+            {% endif %}
+            {% if total_results > 0 %}
+                (Page {{ current_page }} of {{ total_pages }})
+            {% endif %}
+        </div>
+
+        <div class="book-grid" id="book-grid">
+            {% for book in results %}
+            <a href="{{ url_for('book_details', identifier=book.identifier) }}" class="book-card-link"> 
+                <div class="book-card">
+                    <div class="book-image-container">
+                        <img src="https://archive.org/services/img/{{ book.identifier }}" 
+                            alt="Cover of {{ book.title }}"
+                            class="book-image"
+                            onerror="this.src='/api/placeholder/280/400'">
+                        <div class="book-overlay">
+                            <h3 class="overlay-title">{{ book.title }}</h3>
+                            {% if book.creator %}
+                                <p class="overlay-author">{{ book.creator }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </a>
+            {% else %}
+            <div class="no-results">
+              <h2>No books found{% if query %} matching "{{ query }}"{% endif %}</h2>
+              <p>Try different keywords or browse our collection.</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if total_pages > 1 %}
+        <div class="pagination">
+            {% if current_page > 1 %}
+                <a href="{{ url_for('index', query=query, page=1) }}">&laquo;</a>
+                <a href="{{ url_for('index', query=query, page=current_page-1) }}">&lsaquo;</a>
+            {% else %}
+                <span class="disabled">&laquo;</span>
+                <span class="disabled">&lsaquo;</span>
+            {% endif %}
+
+            {% for p in page_range %}
+                {% if p == current_page %}
+                    <span class="current-page">{{ p }}</span>
+                {% else %}
+                    <a href="{{ url_for('index', query=query, page=p) }}">{{ p }}</a>
+                {% endif %}
+            {% endfor %}
+
+            {% if current_page < total_pages %}
+                <a href="{{ url_for('index', query=query, page=current_page+1) }}">&rsaquo;</a>
+                <a href="{{ url_for('index', query=query, page=total_pages) }}">&raquo;</a>
+            {% else %}
+                <span class="disabled">&rsaquo;</span>
+                <span class="disabled">&raquo;</span>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

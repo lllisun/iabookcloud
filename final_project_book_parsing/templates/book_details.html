@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Analysis</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <script src="https://unpkg.com/d3-cloud/build/d3.layout.cloud.js"></script>
+</head>
+<body>
+    {% include 'header.html' %}
+
+    <div class="container">
+        <a href="/" class="back-link">← Back to Search</a>
+
+        <div class="book-container">
+    <div class="book-left">
+        <div class="book-image-custom">
+            <img 
+                src="https://archive.org/services/img/{{ metadata.identifier }}" 
+                alt="{{ metadata.metadata.get('title', metadata.title) }}"
+                onerror="this.src='/api/placeholder/280/400'"
+            >
+        </div>
+        <div class="book-info">
+            <h1 class="book-title">{{ metadata.metadata.get('title', metadata.title) }}</h1>
+            <div class="book-creator">{{ metadata.metadata.get('creator', 'Unknown Author') }}</div>
+            {% if metadata.metadata.get('description') %}
+            <p><strong>IA Book Description:</strong> {{ metadata.metadata.get('description')|safe }}</p>
+            {% endif %}
+        </div>
+        <div class="book-details">
+            <h3>Book Details</h3>
+            <ul>
+                {% if metadata.metadata.get('date') %}
+                    <li>Published: {{ metadata.metadata.get('date') }}</li>
+                {% endif %}
+                {% if metadata.metadata.get('publisher') %}
+                    <li>Publisher: {{ metadata.metadata.get('publisher') }}</li>
+                {% endif %}
+                {% if metadata.metadata.get('language') %}
+                    <li>Language: {{ metadata.metadata.get('language') }}</li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Right column: Analyze Text -->
+    <div class="book-right">
+        <div class="metadata-section">
+            <div class="analysis-header"> 
+                <h3 class="metadata-title">Text Analysis</h3>
+                <div class="analysis-controls">
+                    <button id="analyzeButton" class="primary-button">Scan Text</button>
+                </div>
+            </div>
+            <div id="loadingMessage" class="loading" style="display: none;">
+                Analyzing text... This may take a few moments.
+            </div>
+            <div id="analysisResults" class="analysis-results" style="display: none;">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h4>Total Words</h4>
+                        <div id="totalWords" class="stat-value">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Unique Words</h4>
+                        <div id="uniqueWords" class="stat-value">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Lexical Diversity</h4>
+                        <div id="lexicalDiversity" class="stat-value">-</div>
+                    </div>
+                </div>
+            
+                <div class="word-analysis-flex">
+                    <div class="word-cloud-container">
+                        <div id="wordCloudLoading" style="display: none;">Generating word cloud...</div>
+                        <div id="wordCloudError" style="display: none;">Failed to generate word cloud.</div>
+                        <svg id="wordCloud" width="400" height="400"></svg>
+                        <script src="{{ url_for('static', filename='js/word-cloud.js') }}"></script>
+                        <script src="{{ url_for('static', filename='js/word-context.js') }}"></script>
+                    </div>
+                    <div class="frequency-table-container">
+                        <h4>Top Word Frequencies</h4>
+                        <table id="frequencyTable" class="frequency-table">
+                            <thead>
+                                <tr>
+                                    <th>Word</th>
+                                    <th># Found</th>
+                                    <th>%</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+            
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <script src="{{ url_for('static', filename='js/word-cloud.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const analyzeButton = document.getElementById('analyzeButton');
+            const loadingMessage = document.getElementById('loadingMessage');
+            const analysisResults = document.getElementById('analysisResults');
+            const frequencyTable = document.getElementById('frequencyTable');
+
+            analyzeButton.addEventListener('click', async function() {
+                try {
+                    loadingMessage.style.display = 'block';
+                    analyzeButton.disabled = true;
+                    analysisResults.style.display = 'none';
+
+                    const identifier = window.location.pathname.split('/').pop();
+                    
+                    const response = await fetch(`/analyze/${identifier}`);
+                    const data = await response.json();
+
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+
+                    document.getElementById('totalWords').textContent = data.total_words.toLocaleString();
+                    document.getElementById('uniqueWords').textContent = data.unique_words.toLocaleString();
+                    document.getElementById('lexicalDiversity').textContent = `${data.lexical_diversity}%`;
+
+                    loadingMessage.style.display = 'none';
+                    analysisResults.style.display = 'block';
+                    
+                    const tbody = frequencyTable.querySelector('tbody');
+                    tbody.innerHTML = '';
+                    
+                    Object.entries(data.frequencies)
+                        .sort(([,a], [,b]) => b - a)
+                        .slice(0, 50)
+                        .forEach(([word, freq]) => {
+                            const percentage = data.percentages[word] || 0;
+                            const row = tbody.insertRow();
+                            row.insertCell(0).textContent = word;
+                            row.insertCell(1).textContent = freq;
+                            row.insertCell(2).textContent = `${percentage}%`;
+                        });
+
+
+                } catch (error) {
+                    console.error('Analysis failed:', error);
+                    loadingMessage.textContent = 'Analysis failed. Please try again.';
+                } finally {
+                    analyzeButton.disabled = false;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

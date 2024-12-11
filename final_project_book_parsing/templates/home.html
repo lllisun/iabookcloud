@@ -1,0 +1,99 @@
+<!-- trying jinja2 template -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Internet Archive Book Cloud</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    {% include 'header.html' %}
+
+    <div class="text-box">
+        <h2>Welcome to IAB Cloud!</h2>
+        <p>
+            Explore word usage and text analysis from open-source materials provided by the Internet Archive. Please note that all content displayed is directly scraped from the Internet Archive's collection, and some items may not be appropriate as they reflect the archive's repository.
+        </p>
+        <p>
+            This site utilizes the Internet Archive's API. As it is still in development, expect slower load times, especially during initial searches.
+        </p>
+        <p>
+            For more details about the tools, filters applied, or technical logistics, visit the <a href="/about">About</a> page or check out the project on <a href="https://github.com/lllisun/iabookcloud" target="_blank">GitHub</a>.
+        </p>
+    </div>
+    
+
+    <div class="container">
+        <section class="featured-section">
+            <h2 class="section-title">Featured Books</h2>
+            
+            <div class="search-box">
+                <form action="/search" method="GET">
+                    <input type="text" name="query" placeholder="Search books...">
+                    <button type="submit">Search</button>
+                </form>
+            </div>
+        </section>
+
+        <div class="book-grid">
+                <a href="/book/Frankenstein1818Edition" class="book-card">
+                    <div class="book-image-container">
+                        <img src="{{ url_for('static', filename='images/frankenstein.jpg') }}" 
+                             alt="Frankenstein" class="book-image">
+                    </div>
+                    <div class="book-info">
+                        <h3 class="book-title">Frankenstein</h3>
+                        <p class="book-author">Mary Shelley</p>
+                    </div>
+                </a>
+            
+                <a href="/book/moby-dick-herman-melville" class="book-card">
+                    <div class="book-image-container">
+                        <img src="{{ url_for('static', filename='images/mobydick.jpeg') }}" 
+                             alt="Moby Dick" class="book-image">
+                    </div>
+                    <div class="book-info">
+                        <h3 class="book-title">Moby Dick</h3>
+                        <p class="book-author">Herman Melville</p>
+                    </div>
+                </a>
+            
+                <a href="/book/IlluminationsEssaysAndReflections" class="book-card">
+                    <div class="book-image-container">
+                        <img src="{{ url_for('static', filename='images/illuminations.jpg') }}" 
+                             alt="Illuminations" class="book-image">
+                    </div>
+                    <div class="book-info">
+                        <h3 class="book-title">Illuminations</h3>
+                        <p class="book-author">Walter Benjamin</p>
+                    </div>
+                </a>
+            
+                <a href="/book/TheMartianWay" class="book-card">
+                    <div class="book-image-container">
+                        <img src="{{ url_for('static', filename='images/martian.jpg') }}" 
+                             alt="The Martian Way" class="book-image">
+                    </div>
+                    <div class="book-info">
+                        <h3 class="book-title">The Martian Way</h3>
+                        <p class="book-author">Isaac Asimov</p>
+                    </div>
+                </a>
+            
+                <a href="/book/i-have-no-mouth-and-i-must-scream_20220202" class="book-card">
+                    <div class="book-image-container">
+                        <img src="{{ url_for('static', filename='images/nomouth.jpg') }}" 
+                             alt="I Have No Mouth and I Must Scream" class="book-image">
+                    </div>
+                    <div class="book-info">
+                        <h3 class="book-title">I Have No Mouth and I Must Scream</h3>
+                        <p class="book-author">Harlan Ellison</p>
+                    </div>
+                </a>
+            </div>
+            
+        
+    </div>
+</body>
+</html>
